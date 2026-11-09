@@ -1,0 +1,19 @@
+# Optional: automatic HTTPS with a free certificate.
+# 1. Point a domain name (for example lunch.myschool.se) at your server.
+# 2. Edit "lunch.myschool.se" below. 3. Run: docker compose -f docker-compose.https.yml up -d
+services:
+  lunchlada:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    command: caddy reverse-proxy --from lunch.myschool.se --to lunchlada:3000
+    volumes:
+      - caddy_data:/data
+volumes:
+  caddy_data:

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lunchlåda</title>
+<style>
+:root{--bg:#eef3f1;--surface:#fff;--ink:#14262b;--muted:#5a6d70;--line:#d3dedb;--accent:#0f6b5c;--accent-ink:#fff;--warn:#b4233c;--soft:#dcebe7;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1b1e;--surface:#172a2e;--ink:#e6f0ee;--muted:#9bb0b2;--line:#27403f;--accent:#4cc3ad;--accent-ink:#06211c;--warn:#ff8a9b;--soft:#1d3a38;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:2rem;line-height:1.1;margin:8px 0 4px;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.note{background:var(--soft);border-radius:10px;padding:10px 14px;font-size:.9rem;margin-bottom:16px}
+nav{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+nav button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h3{margin:0 0 2px;font-size:1.1rem}
+.meta{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+.price{font-size:1.4rem;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line);padding:5px 10px;font-size:.85rem}
+.low{color:var(--warn);font-weight:600}
+.tag{display:inline-block;background:var(--soft);border-radius:6px;padding:1px 7px;font-size:.8rem;margin:0 4px 4px 0}
+.tag.al{background:none;border:1px solid var(--warn);color:var(--warn)}
+form,.fg{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
+label{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.9rem}
+label.chk input{width:auto;margin-top:4px}
+input,select{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:0;padding:10px 12px;grid-column:1/-1}
+legend{font-size:.85rem;color:var(--muted);padding:0 6px}
+.als{display:grid;gap:4px 12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat b{display:block;font-size:1.7rem;line-height:1.1}
+.stat span{color:var(--muted);font-size:.85rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);max-width:420px;width:calc(100% - 32px);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.code{font-size:2rem;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--soft);border-radius:12px;padding:12px;margin:12px 0}
+.empty{color:var(--muted);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.err{color:var(--warn);font-size:.9rem;min-height:1.2em;margin:8px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1 id="title"></h1>
+<p class="sub" id="sub"></p>
+<nav role="tablist">
+<button role="tab" id="t-browse" aria-selected="true"></button>
+<button role="tab" id="t-kitchen" aria-selected="false"></button>
+</nav>
+
+<section id="browse">
+<div class="note" id="elig"></div>
+<div class="grid" id="cards"></div>
+<h2 style="margin-top:24px" id="mineH"></h2>
+<form id="mineForm" style="max-width:420px;margin-bottom:10px"><label><span id="mineL"></span><input id="mineC"></label><button class="btn" id="mineB"></button></form>
+<div id="mine"></div>
+</section>
+
+<section id="kitchen" hidden>
+<form id="loginForm" style="max-width:360px"><label><span id="pwL"></span><input id="pw" type="password" autocomplete="current-password"></label><button class="btn" id="loginB"></button><div class="err" id="loginErr"></div></form>
+<div id="admin" hidden>
+<div class="stats" id="stats"></div>
+<div class="card" style="margin-bottom:18px">
+<h2 id="addH"></h2>
+<form id="addForm">
+<label><span id="lDish"></span><input id="dish" required></label>
+<label><span id="lQty"></span><input id="qty" type="number" min="1" max="500" value="20" required></label>
+<label><span id="lPrice"></span><input id="pr" type="number" min="0" max="1000" value="35" required></label>
+<label><span id="lFrom"></span><input id="from" type="time" value="13:15" required></label>
+<label><span id="lTo"></span><input id="to" type="time" value="14:00" required></label>
+<fieldset><legend id="lAl"></legend><div class="als" id="als"></div></fieldset>
+<fieldset><legend id="lSafe"></legend><div id="safe"></div></fieldset>
+<button class="btn" style="grid-column:1/-1" id="pubB"></button>
+<div class="err" id="addErr" style="grid-column:1/-1"></div>
+</form>
+</div>
+<h2 id="todayH"></h2>
+<div class="tablewrap"><table id="tbl"></table></div>
+<p><a class="btn ghost" href="/api/admin/export.csv" id="csv"></a> <button class="btn ghost" id="logout"></button></p>
+</div>
+</section>
+</main>
+
+<dialog id="dlg">
+<h2 id="dTitle"></h2>
+<div id="step1">
+<p class="meta" id="dInfo"></p><div id="dAl"></div>
+<div class="fg" style="margin:10px 0">
+<label><span id="lName"></span><input id="who" autocomplete="given-name"></label>
+<label><span id="lContact"></span><input id="contact" autocomplete="email"></label>
+<label><span id="lQ"></span><select id="q"></select></label>
+<label id="codeWrap"><span id="lCode"></span><input id="access"></label>
+</div>
+<label class="chk"><input type="checkbox" id="ack"> <span id="ackT"></span></label>
+<div class="err" id="dErr"></div>
+<div class="row"><button class="btn ghost" id="cancel" type="button"></button><button class="btn" id="pay" type="button"></button></div>
+</div>
+<div id="step2" hidden>
+<p id="okT"></p><div class="code" id="codeBox"></div><p class="meta" id="payInfo"></p>
+<button class="btn ghost" id="done" type="button" style="width:100%"></button>
+</div>
+</dialog>
+
+<script>
+const T={
+sv:{title:"Lunchlåda",sub:"Överbliven mat från skolköket blir prisvärda lunchlådor i stället för att slängas.",browse:"Hämta lunch",kitchen:"Köket",
+left:"kvar",soldout:"Slutsåld",closedB:"Reservation stängd",reserve:"Reservera",pickup:"Hämtas",none:"Inga lådor just nu. Kom tillbaka senare.",noAl:"Inga av de 14 allergenerna angivna",
+contains:"Innehåller",mineH:"Mina reservationer",mineL:"Din e-post eller telefon",mineB:"Visa",mineNone:"Inga reservationer hittades idag.",
+name:"Förnamn",contact:"E-post eller telefon",qty:"Antal",code:"Åtkomstkod från skolan",ack:"Jag har läst allergeninformationen och förstår att lådan ska ätas samma dag.",
+cancel:"Avbryt",ok:"Reservationen är klar. Visa koden vid hämtning:",payC:"Betala {a} i skolköket när du hämtar lådan.",close:"Stäng",
+e:{invalid:"Kontrollera uppgifterna.",ack:"Bekräfta allergeninformationen.",access:"Fel åtkomstkod.",gone:"Lådan finns inte längre.",closed:"Reservationen har stängt.",soldout:"Slutsåld.",duplicate:"Du har redan reserverat den här lådan.",rate:"För många försök. Vänta en stund.",failed:"Något gick fel.",login:"Fel lösenord.",safety:"Bekräfta checklistan."},
+pw:"Lösenord",login:"Logga in",logout:"Logga ut",addH:"Lägg upp överbliven mat",dish:"Maträtt",price:"Pris",from:"Hämtas från",to:"Hämtas till",al:"Allergener i rätten (EU:s 14)",
+safeL:"Livsmedelssäkerhet, bekräfta",safe:["Maten har inte serverats och har hållits varm (60 °C eller mer) eller kyld (8 °C eller mindre).","Lådorna är i rena förpackningar märkta med maträtt, allergener och datum.","Allergenuppgifterna är kontrollerade mot receptet idag."],
+pub:"Publicera",todayH:"Dagens utbud och reservationer",csv:"Exportera CSV",col:["Maträtt","Kvar","Namn","Antal","Kod","Status",""],del:"Ta bort",confirm:"Ta bort utbudet?",
+st:{reserved:"Reserverad",paid:"Betald",collected:"Betald och utlämnad",cancelled:"Avbokad"},stC:"Betald och utlämnad",stX:"Avboka",
+s1:"portioner utlämnade totalt",s2:"matsvinn undvikit",s3:"intäkt från utlämnade lådor",
+al_:{gluten:"Gluten",crustaceans:"Kräftdjur",eggs:"Ägg",fish:"Fisk",peanuts:"Jordnötter",soy:"Soja",milk:"Mjölk",nuts:"Nötter",celery:"Selleri",mustard:"Senap",sesame:"Sesamfrön",sulphites:"Sulfit",lupin:"Lupin",molluscs:"Blötdjur"}},
+en:{title:"Lunchbox",sub:"Leftover food from the school kitchen becomes affordable lunchboxes instead of going to waste.",browse:"Get lunch",kitchen:"Kitchen",
+left:"left",soldout:"Sold out",closedB:"Reservations closed",reserve:"Reserve",pickup:"Pickup",none:"No lunchboxes right now. Check back later.",noAl:"None of the 14 allergens listed",
+contains:"Contains",mineH:"My reservations",mineL:"Your email or phone",mineB:"Show",mineNone:"No reservations found today.",
+name:"First name",contact:"Email or phone",qty:"Quantity",code:"Access code from the school",ack:"I have read the allergen information and understand the box must be eaten the same day.",
+cancel:"Cancel",ok:"Reservation confirmed. Show this code at pickup:",payC:"Pay {a} at the school kitchen when you collect your box.",close:"Close",
+e:{invalid:"Please check your details.",ack:"Please confirm the allergen information.",access:"Wrong access code.",gone:"This box is no longer available.",closed:"Reservations have closed.",soldout:"Sold out.",duplicate:"You have already reserved this box.",rate:"Too many attempts. Please wait.",failed:"Something went wrong.",login:"Wrong password.",safety:"Please confirm the checklist."},
+pw:"Password",login:"Log in",logout:"Log out",addH:"Add leftover food",dish:"Dish",price:"Price",from:"Pickup from",to:"Pickup to",al:"Allergens in the dish (EU 14)",
+safeL:"Food safety, confirm all",safe:["The food has not been served and has been kept hot (60 °C or above) or cold (8 °C or below).","Boxes are in clean containers labeled with dish, allergens and date.","Allergen details were checked against today's recipe."],
+pub:"Publish",todayH:"Today's boxes and reservations",csv:"Export CSV",col:["Dish","Left","Name","Qty","Code","Status",""],del:"Remove",confirm:"Remove this listing?",
+st:{reserved:"Reserved",paid:"Paid",collected:"Paid and collected",cancelled:"Cancelled"},stC:"Paid and collected",stX:"Cancel",
+s1:"portions collected in total",s2:"food waste avoided",s3:"revenue from collected boxes",
+al_:{gluten:"Gluten",crustaceans:"Crustaceans",eggs:"Eggs",fish:"Fish",peanuts:"Peanuts",soy:"Soy",milk:"Milk",nuts:"Tree nuts",celery:"Celery",mustard:"Mustard",sesame:"Sesame",sulphites:"Sulphites",lupin:"Lupin",molluscs:"Molluscs"}}};
+const $=id=>document.getElementById(id);
+const el=(tag,props={},...kids)=>{const e=document.createElement(tag);Object.assign(e,props);kids.flat().forEach(k=>e.append(k));return e};
+const api=async(p,o={})=>{const r=await fetch(p,o.body?{method:o.method||"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o.body)}:o);let j={};try{j=await r.json()}catch{}return{ok:r.ok,j}};
+let C,t,cur=null;
+
+async function init(){
+  C=(await api("/api/config")).j;t=T[C.lang];document.documentElement.lang=C.lang;
+  document.title=C.school;$("title").textContent=t.title+" "+C.school;$("sub").textContent=t.sub;
+  $("t-browse").textContent=t.browse;$("t-kitchen").textContent=t.kitchen;
+  $("elig").textContent=C.eligibility||"";$("elig").hidden=!C.eligibility;
+  $("mineH").textContent=t.mineH;$("mineL").textContent=t.mineL;$("mineB").textContent=t.mineB;
+  $("lName").textContent=t.name;$("lContact").textContent=t.contact;$("lQ").textContent=t.qty;$("lCode").textContent=t.code;$("codeWrap").hidden=!C.needsAccessCode;
+  $("ackT").textContent=t.ack;$("cancel").textContent=t.cancel;$("pay").textContent=t.reserve;$("okT").textContent=t.ok;$("done").textContent=t.close;
+  $("q").replaceChildren(...Array.from({length:C.maxPerPerson},(_,i)=>el("option",{textContent:i+1})));
+  $("pwL").textContent=t.pw;$("loginB").textContent=t.login;$("logout").textContent=t.logout;$("addH").textContent=t.addH;
+  [["lDish","dish"],["lQty","qty"],["lPrice","price"],["lFrom","from"],["lTo","to"],["lAl","al"],["lSafe","safeL"],["pubB","pub"],["todayH","todayH"],["csv","csv"]].forEach(([i,k])=>$(i).textContent=t[k]);
+  $("als").replaceChildren(...C.allergens.map(a=>el("label",{className:"chk"},el("input",{type:"checkbox",className:"al",value:a})," "+t.al_[a])));
+  $("safe").replaceChildren(...t.safe.map(s=>el("label",{className:"chk"},el("input",{type:"checkbox",className:"fs"})," "+s)));
+  loadList();setInterval(loadList,30000);
+  if(C.admin)showAdmin();
+}
+const money=n=>n+" "+C.currency;
+async function loadList(){
+  const L=(await api("/api/listings")).j;
+  $("cards").replaceChildren(...(L.length?L.map(l=>{
+    const dis=l.left<1||l.closed;
+    return el("div",{className:"card"},el("h3",{textContent:l.dish}),el("p",{className:"meta",textContent:`${t.pickup} ${l.from}–${l.to}`}),
+      el("div",{},...(l.allergens.length?l.allergens.map(a=>el("span",{className:"tag al",textContent:t.al_[a]})):[el("span",{className:"tag",textContent:t.noAl})])),
+      el("div",{className:"row"},el("span",{className:"price",textContent:money(l.price)}),el("span",{className:l.left<=3?"low":"",textContent:l.left>0?`${l.left} ${t.left}`:t.soldout})),
+      el("button",{className:"btn",style:"width:100%;margin-top:12px",disabled:dis,textContent:l.closed&&l.left>0?t.closedB:t.reserve,onclick:()=>openDlg(l)}));
+  }):[el("div",{className:"empty",textContent:t.none})]));
+}
+function openDlg(l){
+  cur=l;$("dTitle").textContent=l.dish;$("dInfo").textContent=`${money(l.price)} · ${t.pickup} ${l.from}–${l.to}`;
+  $("dAl").replaceChildren(...(l.allergens.length?[t.contains+": ",...l.allergens.map(a=>el("span",{className:"tag al",textContent:t.al_[a]}))]:[]));
+  $("dErr").textContent="";$("ack").checked=false;$("step1").hidden=false;$("step2").hidden=true;$("dlg").showModal();
+}
+$("cancel").onclick=$("done").onclick=()=>{$("dlg").close();loadList()};
+$("pay").onclick=async()=>{
+  $("pay").disabled=true;
+  const q=+$("q").value,r=await api("/api/reserve",{body:{listingId:cur.id,name:$("who").value,contact:$("contact").value,qty:q,accessCode:$("access").value,ack:$("ack").checked}});
+  $("pay").disabled=false;
+  if(!r.ok){$("dErr").textContent=t.e[r.j.error]||t.e.failed;return}
+  $("codeBox").textContent=r.j.code;
+  $("payInfo").textContent=C.paymentNote||t.payC.replace("{a}",money(r.j.total));
+  $("step1").hidden=true;$("step2").hidden=false;
+};
+$("mineForm").onsubmit=async e=>{e.preventDefault();
+  const r=(await api("/api/mine",{body:{contact:$("mineC").value}})).j;
+  $("mine").replaceChildren(...(Array.isArray(r)&&r.length?r.map(x=>el("div",{className:"card",style:"margin-bottom:8px"},el("b",{textContent:x.dish}),` · ${x.qty} · ${x.code} · ${t.st[x.status]}`)):[el("div",{className:"empty",textContent:t.mineNone})]))};
+
+function tab(k){["browse","kitchen"].forEach(x=>{$(x).hidden=x!==k;$("t-"+x).setAttribute("aria-selected",x===k)})}
+$("t-browse").onclick=()=>tab("browse");$("t-kitchen").onclick=()=>tab("kitchen");
+$("loginForm").onsubmit=async e=>{e.preventDefault();const r=await api("/api/admin/login",{body:{password:$("pw").value}});
+  if(r.ok){$("pw").value="";showAdmin()}else $("loginErr").textContent=t.e[r.j.error]||t.e.failed};
+$("logout").onclick=async()=>{await api("/api/admin/logout",{body:{}});location.reload()};
+async function showAdmin(){
+  const r=await api("/api/admin/overview");if(!r.ok){$("admin").hidden=true;$("loginForm").hidden=false;return}
+  $("loginForm").hidden=true;$("admin").hidden=false;const o=r.j;
+  $("stats").replaceChildren(...[[o.collected,t.s1],[o.kg+" kg",t.s2],[money(o.revenue),t.s3]].map(([b,s])=>el("div",{className:"stat"},el("b",{textContent:b}),el("span",{textContent:s}))));
+  const rows=[el("tr",{},...t.col.map(c=>el("th",{textContent:c})))];
+  const set=(id,status)=>async()=>{await api("/api/admin/reservations/"+id,{body:{status}});showAdmin()};
+  o.listings.forEach(l=>{
+    rows.push(el("tr",{},el("td",{},el("b",{textContent:l.dish})),el("td",{textContent:`${l.left}/${l.qty}`}),el("td",{colSpan:4}),el("td",{},el("button",{className:"btn ghost",textContent:t.del,onclick:async()=>{if(confirm(t.confirm)){await api("/api/admin/listings/"+l.id,{method:"DELETE",body:null,headers:{}});showAdmin()}}}))));
+    l.reservations.forEach(r=>rows.push(el("tr",{},el("td"),el("td"),el("td",{textContent:`${r.name} (${r.contact})`}),el("td",{textContent:r.qty}),el("td",{textContent:r.code}),el("td",{textContent:t.st[r.status]}),
+      el("td",{},el("button",{className:"btn ghost",textContent:t.stC,onclick:set(r.id,"collected")})," ",el("button",{className:"btn ghost",textContent:t.stX,onclick:set(r.id,"cancelled")})))));
+  });
+  $("tbl").replaceChildren(...rows);
+}
+$("addForm").onsubmit=async e=>{e.preventDefault();
+  const safety=[...document.querySelectorAll(".fs")].every(x=>x.checked);
+  const r=await api("/api/admin/listings",{body:{dish:$("dish").value,qty:$("qty").value,price:$("pr").value,from:$("from").value,to:$("to").value,allergens:[...document.querySelectorAll(".al:checked")].map(x=>x.value),safety}});
+  $("addErr").textContent=r.ok?"":(t.e[r.j.error]||t.e.failed);
+  if(r.ok){$("addForm").reset();document.querySelectorAll(".fs,.al").forEach(x=>x.checked=false);showAdmin();loadList()}};
+init();
+</script>
+</body>
+</html>
