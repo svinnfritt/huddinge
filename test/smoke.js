@@ -1,4 +1,4 @@
-// Starts the server on a temp port and runs the full reserve flow. Run: npm test
+// Startar servern på en temporär port och kör hela reservationsflödet. Kör: npm test
 const { spawn } = require("node:child_process");
 const fs = require("node:fs"), os = require("node:os"), path = require("node:path");
 const assert = require("node:assert/strict");
@@ -34,5 +34,5 @@ const J = async (p, body, cookie, method) => {
   const ov = (await J("/api/admin/overview", null, cookie)).j; const rid = ov.listings[0].reservations[0].id;
   await J("/api/admin/reservations/" + rid, { status: "collected" }, cookie);
   const ov2 = (await J("/api/admin/overview", null, cookie)).j; assert.equal(ov2.collected, 2); assert.equal(ov2.kg, 0.8);
-  console.log("All checks passed.");
-})().catch(e => { console.error("FAILED:", e.message); process.exitCode = 1; }).finally(() => { srv.kill(); fs.rmSync(tmp, { recursive: true, force: true }); });
+  console.log("Alla kontroller godkända.");
+})().catch(e => { console.error("MISSLYCKADES:", e.message); process.exitCode = 1; }).finally(() => { srv.kill(); fs.rmSync(tmp, { recursive: true, force: true }); });

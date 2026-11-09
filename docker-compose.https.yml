@@ -1,6 +1,7 @@
-# Optional: automatic HTTPS with a free certificate.
-# 1. Point a domain name (for example lunch.myschool.se) at your server.
-# 2. Edit "lunch.myschool.se" below. 3. Run: docker compose -f docker-compose.https.yml up -d
+# Valfritt: automatisk HTTPS med ett gratis certifikat.
+# 1. Peka ett domännamn (till exempel lunch.minskola.se) mot din server.
+# 2. Byt ut "lunch.myschool.se" nedan mot ditt domännamn.
+# 3. Kör: docker compose -f docker-compose.https.yml up -d
 services:
   lunchlada:
     build: .

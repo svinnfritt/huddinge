@@ -1,13 +1,13 @@
-// Lunchlåda: sell leftover school food instead of throwing it away.
-// Zero dependencies. Needs Node.js 22.5 or newer.
+// Lunchlåda: sälj överbliven skolmat i stället för att slänga den.
+// Inga beroenden. Kräver Node.js 22.5 eller senare.
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
 
-// ---------- Settings (all from .env / environment) ----------
-try { // tiny .env loader, so admins can just edit a text file
+// ---------- Inställningar (allt kommer från .env / miljövariabler) ----------
+try { // liten .env-läsare så att man bara behöver redigera en textfil
   for (const line of fs.readFileSync(path.join(__dirname, ".env"), "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
     if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
@@ -16,7 +16,7 @@ try { // tiny .env loader, so admins can just edit a text file
 const E = process.env;
 const cfg = {
   port: +E.PORT || 3000,
-  school: E.SCHOOL_NAME || "Our School",
+  school: E.SCHOOL_NAME || "Vår skola",
   lang: E.LANGUAGE === "en" ? "en" : "sv",
   currency: E.CURRENCY || "kr",
   adminPassword: E.ADMIN_PASSWORD || "",
@@ -29,11 +29,11 @@ const cfg = {
   retentionDays: +E.RETENTION_DAYS || 30,
 };
 if (cfg.adminPassword.length < 8) {
-  console.error("Set ADMIN_PASSWORD (at least 8 characters) in the .env file. See README.md.");
+  console.error("Ange ADMIN_PASSWORD (minst 8 tecken) i filen .env. Se README.md.");
   process.exit(1);
 }
 
-// ---------- Database ----------
+// ---------- Databas ----------
 fs.mkdirSync(path.join(__dirname, "data"), { recursive: true });
 const db = new DatabaseSync(path.join(__dirname, "data", "lunchlada.db"));
 db.exec(`
@@ -52,7 +52,7 @@ const secretFile = path.join(__dirname, "data", "secret");
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString("hex"), { mode: 0o600 });
 const SECRET = fs.readFileSync(secretFile, "utf8");
 
-// ---------- Helpers ----------
+// ---------- Hjälpfunktioner ----------
 const pad = n => String(n).padStart(2, "0");
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
@@ -61,7 +61,7 @@ const isClosed = l => nowMin() >= mins(l.from_t) - cfg.cutoff;
 const ALLERGENS = ["gluten","crustaceans","eggs","fish","peanuts","soy","milk","nuts","celery","mustard","sesame","sulphites","lupin","molluscs"];
 const sign = v => crypto.createHmac("sha256", SECRET).update(v).digest("hex");
 const safeEq = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
-const hits = new Map(); // very small in-memory rate limiter
+const hits = new Map(); // enkel begränsning av antal försök (i minnet)
 const limited = (ip, key, max, windowMs) => {
   const k = key + ip, now = Date.now(), arr = (hits.get(k) || []).filter(t => now - t < windowMs);
   arr.push(now); hits.set(k, arr); return arr.length > max;
@@ -85,7 +85,7 @@ const taken = id => db.prepare("SELECT COALESCE(SUM(qty),0) n FROM reservations 
 const listingView = l => ({ id: l.id, dish: l.dish, qty: l.qty, price: l.price, from: l.from_t, to: l.to_t,
   allergens: JSON.parse(l.allergens), left: l.qty - taken(l.id), closed: isClosed(l) });
 
-// ---------- Routes ----------
+// ---------- Vägar (API) ----------
 async function api(req, res, url) {
   const ip = req.socket.remoteAddress;
   const route = `${req.method} ${url.pathname}`;
@@ -111,7 +111,7 @@ async function api(req, res, url) {
     if (!l) return send(res, 404, { error: "gone" });
     if (isClosed(l)) return send(res, 409, { error: "closed" });
     const code = String(crypto.randomInt(1000, 10000));
-    try { // SQLite runs one write at a time, so this check cannot oversell
+    try { // SQLite skriver en i taget, så det går inte att sälja fler lådor än som finns
       db.exec("BEGIN IMMEDIATE");
       if (db.prepare("SELECT 1 FROM reservations WHERE listing_id=? AND contact=? AND status!='cancelled'").get(l.id, contact)) { db.exec("ROLLBACK"); return send(res, 409, { error: "duplicate" }); }
       db.prepare("DELETE FROM reservations WHERE listing_id=? AND contact=? AND status='cancelled'").run(l.id, contact);
@@ -174,7 +174,8 @@ async function api(req, res, url) {
     }
     if (route === "GET /api/admin/export.csv") {
       const rows = db.prepare(`SELECT l.date,l.dish,r.qty,r.price,r.status FROM reservations r JOIN listings l ON l.id=r.listing_id ORDER BY l.date,l.id`).all();
-      const csv = "date,dish,portions,price_per_portion,status\n" + rows.map(r => [r.date, `"${r.dish.replace(/"/g, '""')}"`, r.qty, r.price, r.status].join(",")).join("\n");
+      const sv = { reserved: "reserverad", paid: "betald", collected: "utlämnad", cancelled: "avbokad" };
+      const csv = "datum,maträtt,portioner,pris_per_portion,status\n" + rows.map(r => [r.date, `"${r.dish.replace(/"/g, '""')}"`, r.qty, r.price, sv[r.status] || r.status].join(",")).join("\n");
       return send(res, 200, csv, "text/csv; charset=utf-8", { "Content-Disposition": "attachment; filename=lunchlada.csv" });
     }
   }
@@ -191,9 +192,9 @@ http.createServer(async (req, res) => {
     if (!full.startsWith(path.join(__dirname, "public")) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) return send(res, 404, "Not found", "text/plain");
     send(res, 200, fs.readFileSync(full), TYPES[path.extname(full)] || "application/octet-stream", { "Cache-Control": "no-cache" });
   } catch (e) { console.error(e); send(res, 500, { error: "server" }); }
-}).listen(cfg.port, () => console.log(`Lunchlåda running on http://localhost:${cfg.port}`));
+}).listen(cfg.port, () => console.log(`Lunchlåda körs på http://localhost:${cfg.port}`));
 
-// ---------- Privacy: erase names and contacts after RETENTION_DAYS, keep the counts ----------
+// ---------- Integritet: radera namn och kontaktuppgifter efter RETENTION_DAYS, behåll siffrorna ----------
 const purge = () => db.prepare(`UPDATE reservations SET name='', contact='deleted-'||id WHERE created < ? AND name!=''`)
   .run(Date.now() - cfg.retentionDays * 86400000);
 purge(); setInterval(purge, 6 * 3600 * 1000);

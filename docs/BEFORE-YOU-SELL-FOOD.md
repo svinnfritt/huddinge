@@ -1,24 +1,26 @@
-# Before you sell any food
+# Innan ni säljer mat
 
-This software is only a tool. Rules about selling food differ by country and municipality,
-and you are responsible for following them. Do these things first.
+Programmet är bara ett verktyg. Reglerna för att sälja mat skiljer sig mellan länder och
+kommuner, och ni ansvarar själva för att följa dem. Gör det här först.
 
-1. **Ask your food safety authority.** In Sweden that is the municipality's environmental/food
-   inspection office (miljökontoret) and Livsmedelsverket's guidance. Ask whether selling
-   leftover meals is allowed in your setup, and under what conditions (temperatures, packaging,
-   labeling, same-day sale, who may buy).
-2. **Settle who the seller is.** The food usually belongs to the school owner (for example the
-   municipality). Get their approval, and agree who receives the payments.
-3. **Check the allergen process.** Every box must list the 14 EU allergens that apply. The kitchen
-   must verify them against the recipe every day. The checklist in the app is a reminder,
-   not a legal guarantee.
-4. **Decide who may buy.** Use `ACCESS_CODE` and `ELIGIBILITY_TEXT` to limit sales, for example to
-   guardians and staff. Pupils usually already get a free meal.
-5. **Privacy (GDPR).** The app stores a first name and an email or phone number per reservation and
-   erases them after `RETENTION_DAYS` (default 30). Add a short privacy notice on your own site,
-   tell your data protection officer, and host the server somewhere you control.
-6. **Payments.** The app does not process payments. Buyers pay in the school kitchen when they
-   collect the box, using whatever the kitchen already accepts, and staff mark the box as paid
-   and collected. Agree with the school owner how the money is handled and accounted for.
-7. **Accessibility.** Public-sector websites may have to meet accessibility requirements (WCAG).
-   Test with a screen reader before launch.
+1. **Fråga er livsmedelskontroll.** I Sverige är det kommunens miljökontor eller motsvarande
+   livsmedelskontroll, och Livsmedelsverkets vägledning. Fråga om det är tillåtet att sälja
+   överbliven mat i er verksamhet och på vilka villkor (temperaturer, förpackning, märkning,
+   försäljning samma dag, vem som får köpa).
+2. **Bestäm vem som är säljare.** Maten tillhör oftast skolans huvudman (till exempel kommunen).
+   Få deras godkännande och kom överens om vem som tar emot betalningen.
+3. **Kontrollera allergenrutinen.** Varje låda ska ange de av EU:s 14 allergener som finns i den.
+   Köket måste kontrollera uppgifterna mot receptet varje dag. Checklistan i programmet är en
+   påminnelse, inte en juridisk garanti.
+4. **Bestäm vem som får köpa.** Använd `ACCESS_CODE` och `ELIGIBILITY_TEXT` för att begränsa
+   försäljningen, till exempel till vårdnadshavare och personal. Eleverna får oftast redan en
+   kostnadsfri skolmåltid.
+5. **Integritet (GDPR).** Programmet sparar ett förnamn och en e-postadress eller ett
+   telefonnummer per reservation och raderar dem efter `RETENTION_DAYS` (30 dagar som standard).
+   Lägg till en kort integritetspolicy på er egen webbplats, informera ert dataskyddsombud och
+   kör servern på en plats som ni själva kontrollerar.
+6. **Betalning.** Programmet hanterar inga betalningar. Köparen betalar i skolköket när lådan
+   hämtas, med det som köket redan tar emot, och personalen markerar lådan som betald och
+   utlämnad. Kom överens med skolans huvudman om hur pengarna hanteras och bokförs.
+7. **Tillgänglighet.** Offentliga webbplatser kan behöva uppfylla tillgänglighetskrav (WCAG).
+   Testa med en skärmläsare innan ni startar.

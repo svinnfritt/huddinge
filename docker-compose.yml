@@ -6,4 +6,4 @@ services:
       - "3000:3000"
     env_file: .env
     volumes:
-      - ./data:/app/data   # the database lives here: back this folder up
+      - ./data:/app/data   # databasen ligger här: ta backup på den här mappen

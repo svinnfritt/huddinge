@@ -1,7 +1,7 @@
 {
   "name": "lunchlada",
   "version": "0.1.0",
-  "description": "Sell leftover school food as lunchboxes to reduce food waste. Zero dependencies.",
+  "description": "Sälj överbliven skolmat som lunchlådor och minska matsvinnet. Inga beroenden.",
   "license": "MIT",
   "scripts": { "start": "node server.js", "test": "node test/smoke.js" },
   "engines": { "node": ">=22.5" }
