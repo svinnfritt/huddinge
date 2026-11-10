@@ -102,6 +102,8 @@ Allt ställs in i `.env`. Se [.env.example](.env.example), där varje rad är ko
 
 ## Daglig användning
 
+> Steg-för-steg för kökspersonal finns i [docs/USER-GUIDE.md](docs/USER-GUIDE.md).
+
 1. Köket: **Köket**, logga in, fyll i formuläret, bekräfta checklistan för livsmedelssäkerhet och tryck **Publicera**.
 2. Köpare: öppna sidan, tryck **Reservera**, anteckna koden.
 3. Vid hämtning: köparen visar koden och betalar i köket. Hitta koden i köksvyn och tryck
