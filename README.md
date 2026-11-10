@@ -1,4 +1,4 @@
-# Svinnfritt lunchlådan
+# Lunchlåda
 
 **Låt skolköket sälja överbliven mat som billiga lunchlådor i stället för att slänga den.**
 
@@ -27,7 +27,7 @@ node demo.js
 node server.js
 ```
 
-`demo.js` fyller databasen med fiktiva lunchlådor och reservationer för en fiktiv skola som
+`demo.js` fyller databasen med fiktiva lunchlådor och reservationer för en skola som
 heter Stenbockens skola, så att du direkt kan bläddra bland lådor, reservera och logga
 in i köket utan att skriva in något själv. Öppna `http://localhost:3000`. Om ingen
 `.env` finns skapar skriptet en med ett demolösenord och skriver ut det.

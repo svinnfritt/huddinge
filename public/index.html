@@ -30,6 +30,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .btn.ghost{background:none;color:var(--ink);border:1px solid var(--line);padding:5px 10px;font-size:.85rem}
 .low{color:var(--warn);font-weight:600}
 .tag{display:inline-block;background:var(--soft);border-radius:6px;padding:1px 7px;font-size:.8rem;margin:0 4px 4px 0}
+.badge{display:inline-block;background:var(--warn);color:#fff;border-radius:10px;padding:0 6px;font-size:.75rem;font-weight:700;margin-left:6px;line-height:1.5;vertical-align:middle}
 .tag.al{background:none;border:1px solid var(--warn);color:var(--warn)}
 form,.fg{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
 label{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
@@ -46,6 +47,8 @@ legend{font-size:.85rem;color:var(--muted);padding:0 6px}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:.9rem}
 th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr.newrow td{animation:ll-flash 2.5s ease-out}
+@keyframes ll-flash{0%{background:rgba(76,195,173,.45)}100%{background:transparent}}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);max-width:420px;width:calc(100% - 32px);padding:20px}
 dialog::backdrop{background:rgba(0,0,0,.5)}
 .code{font-size:2rem;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--soft);border-radius:12px;padding:12px;margin:12px 0}
@@ -60,7 +63,7 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 <p class="sub" id="sub"></p>
 <nav role="tablist">
 <button role="tab" id="t-browse" aria-selected="true"></button>
-<button role="tab" id="t-kitchen" aria-selected="false"></button>
+<button role="tab" id="t-kitchen" aria-selected="false"><span id="kLbl"></span> <span id="kBadge" class="badge" hidden></span></button>
 </nav>
 
 <section id="browse">
@@ -150,7 +153,7 @@ let C,t,cur=null;
 async function init(){
   C=(await api("/api/config")).j;t=T[C.lang];document.documentElement.lang=C.lang;
   document.title=C.school;$("title").textContent=t.title+" "+C.school;$("sub").textContent=t.sub;
-  $("t-browse").textContent=t.browse;$("t-kitchen").textContent=t.kitchen;
+  $("t-browse").textContent=t.browse;$("kLbl").textContent=t.kitchen;newOrdersLbl=C.lang==="sv"?"nya beställningar":"new orders";
   $("elig").textContent=C.eligibility||"";$("elig").hidden=!C.eligibility;
   $("mineH").textContent=t.mineH;$("mineL").textContent=t.mineL;$("mineB").textContent=t.mineB;
   $("lName").textContent=t.name;$("lContact").textContent=t.contact;$("lQ").textContent=t.qty;$("lCode").textContent=t.code;$("codeWrap").hidden=!C.needsAccessCode;
@@ -194,19 +197,30 @@ $("mineForm").onsubmit=async e=>{e.preventDefault();
   $("mine").replaceChildren(...(Array.isArray(r)&&r.length?r.map(x=>el("div",{className:"card",style:"margin-bottom:8px"},el("b",{textContent:x.dish}),` · ${x.qty} · ${x.code} · ${t.st[x.status]}`)):[el("div",{className:"empty",textContent:t.mineNone})]))};
 
 function tab(k){["browse","kitchen"].forEach(x=>{$(x).hidden=x!==k;$("t-"+x).setAttribute("aria-selected",x===k)})}
-$("t-browse").onclick=()=>tab("browse");$("t-kitchen").onclick=()=>tab("kitchen");
+$("t-browse").onclick=()=>tab("browse");$("t-kitchen").onclick=()=>{tab("kitchen");primeAudio();unread=0;updateBadge()};
 $("loginForm").onsubmit=async e=>{e.preventDefault();const r=await api("/api/admin/login",{body:{password:$("pw").value}});
-  if(r.ok){$("pw").value="";showAdmin()}else $("loginErr").textContent=t.e[r.j.error]||t.e.failed};
+  if(r.ok){$("pw").value="";primeAudio();showAdmin()}else $("loginErr").textContent=t.e[r.j.error]||t.e.failed};
 $("logout").onclick=async()=>{await api("/api/admin/logout",{body:{}});location.reload()};
+let adminTimer=null,seen=null,actx=null;
+function primeAudio(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume();}catch(e){}}
+function chime(){try{if(!actx)return;const t=actx.currentTime;[[880,0],[1320,0.13]].forEach(([f,d])=>{const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(0.2,t+d+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d+0.3);o.start(t+d);o.stop(t+d+0.32);});}catch(e){}}
+let unread=0,newOrdersLbl="";
+function updateBadge(){const b=$("kBadge");if(unread>0){b.textContent=unread;b.setAttribute("aria-label",unread+" "+newOrdersLbl);b.hidden=false}else b.hidden=true}
 async function showAdmin(){
-  const r=await api("/api/admin/overview");if(!r.ok){$("admin").hidden=true;$("loginForm").hidden=false;return}
+  const r=await api("/api/admin/overview");if(!r.ok){$("admin").hidden=true;$("loginForm").hidden=false;seen=null;if(adminTimer){clearInterval(adminTimer);adminTimer=null}return}
   $("loginForm").hidden=true;$("admin").hidden=false;const o=r.j;
+  // Larma köket när nya reservationer kommer in: jämför id:n med förra uppdateringen
+  const ids=new Set();o.listings.forEach(l=>l.reservations.forEach(x=>ids.add(x.id)));
+  const fresh=seen?[...ids].filter(i=>!seen.has(i)):[];
+  seen=ids;
+  if(fresh.length){chime();if($("kitchen").hidden){unread+=fresh.length;updateBadge()}}
+  if(!adminTimer)adminTimer=setInterval(()=>showAdmin(),30000);
   $("stats").replaceChildren(...[[o.collected,t.s1],[o.kg+" kg",t.s2],[money(o.revenue),t.s3]].map(([b,s])=>el("div",{className:"stat"},el("b",{textContent:b}),el("span",{textContent:s}))));
   const rows=[el("tr",{},...t.col.map(c=>el("th",{textContent:c})))];
   const set=(id,status)=>async()=>{await api("/api/admin/reservations/"+id,{body:{status}});showAdmin()};
   o.listings.forEach(l=>{
     rows.push(el("tr",{},el("td",{},el("b",{textContent:l.dish})),el("td",{textContent:`${l.left}/${l.qty}`}),el("td",{colSpan:4}),el("td",{},el("button",{className:"btn ghost",textContent:t.del,onclick:async()=>{if(confirm(t.confirm)){await api("/api/admin/listings/"+l.id,{method:"DELETE",body:null,headers:{}});showAdmin()}}}))));
-    l.reservations.forEach(r=>rows.push(el("tr",{},el("td"),el("td"),el("td",{textContent:`${r.name} (${r.contact})`}),el("td",{textContent:r.qty}),el("td",{textContent:r.code}),el("td",{textContent:t.st[r.status]}),
+    l.reservations.forEach(r=>rows.push(el("tr",{className:fresh.includes(r.id)?"newrow":""},el("td"),el("td"),el("td",{textContent:`${r.name} (${r.contact})`}),el("td",{textContent:r.qty}),el("td",{textContent:r.code}),el("td",{textContent:t.st[r.status]}),
       el("td",{},el("button",{className:"btn ghost",textContent:t.stC,onclick:set(r.id,"collected")})," ",el("button",{className:"btn ghost",textContent:t.stX,onclick:set(r.id,"cancelled")})))));
   });
   $("tbl").replaceChildren(...rows);
