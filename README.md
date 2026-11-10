@@ -15,6 +15,27 @@ Fungerar på svenska och engelska. Gratis och öppen källkod (MIT-licens).
 
 ---
 
+## Prova demon (fiktiv data)
+
+Vill du bara titta runt innan ni sätter upp riktigt? Kör de här två raderna i projektmappen:
+
+```
+node demo.js
+node server.js
+```
+
+`demo.js` fyller databasen med fiktiva lunchlådor och reservationer för en skola som
+heter Stenbockens skola, så att du direkt kan bläddra bland lådor, reservera och logga
+in i köket utan att skriva in något själv. Öppna `http://localhost:3000`. Om ingen
+`.env` finns skapar skriptet en med ett demolösenord och skriver ut det.
+
+Ta bort demodata när du är klar — då raderas bara de utbud som demon skapade, inte något
+du lagt in själv:
+
+```
+node demo.js --clear
+```
+
 ## Kom igång på 10 minuter (med Docker)
 
 Ni behöver en dator eller server som alltid är på, med [Docker](https://docs.docker.com/get-docker/) installerat.

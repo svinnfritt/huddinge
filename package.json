@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "description": "Sälj överbliven skolmat som lunchlådor och minska matsvinnet. Inga beroenden.",
   "license": "MIT",
-  "scripts": { "start": "node server.js", "test": "node test/smoke.js" },
+  "scripts": { "start": "node server.js", "test": "node test/smoke.js", "demo": "node demo.js" },
   "engines": { "node": ">=22.5" }
 }
