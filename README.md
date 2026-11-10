@@ -1,4 +1,4 @@
-# Lunchlåda
+# Svinnfritt lunchlådan
 
 **Låt skolköket sälja överbliven mat som billiga lunchlådor i stället för att slänga den.**
 
