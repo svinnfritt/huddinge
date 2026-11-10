@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="sv">
+<!--
+  Statisk förhandsvisning av Lunchlåda med fiktiv data (Stenbockens skola).
+  Ingen server krävs: öppna filen direkt i webbläsaren. Syftet är att visa hur
+  det riktiga gränssnittet (public/index.html) ser ut, inte att vara fungerande.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lunchlåda — förhandsvisning</title>
+<style>
+:root{--bg:#eef3f1;--surface:#fff;--ink:#14262b;--muted:#5a6d70;--line:#d3dedb;--accent:#0f6b5c;--accent-ink:#fff;--warn:#b4233c;--soft:#dcebe7;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1b1e;--surface:#172a2e;--ink:#e6f0ee;--muted:#9bb0b2;--line:#27403f;--accent:#4cc3ad;--accent-ink:#06211c;--warn:#ff8a9b;--soft:#1d3a38;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:2rem;line-height:1.1;margin:8px 0 4px;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.note{background:var(--soft);border-radius:10px;padding:10px 14px;font-size:.9rem;margin-bottom:16px}
+nav{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+nav button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h3{margin:0 0 2px;font-size:1.1rem}
+.meta{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+.price{font-size:1.4rem;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line);padding:5px 10px;font-size:.85rem}
+.low{color:var(--warn);font-weight:600}
+.tag{display:inline-block;background:var(--soft);border-radius:6px;padding:1px 7px;font-size:.8rem;margin:0 4px 4px 0}
+.tag.al{background:none;border:1px solid var(--warn);color:var(--warn)}
+form,.fg{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
+label{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.9rem}
+label.chk input{width:auto;margin-top:4px}
+input,select{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat b{display:block;font-size:1.7rem;line-height:1.1}
+.stat span{color:var(--muted);font-size:.85rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);max-width:420px;width:calc(100% - 32px);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.code{font-size:2rem;font-weight:700;letter-spacing:.12em;text-align:center;background:var(--soft);border-radius:12px;padding:12px;margin:12px 0}
+.empty{color:var(--muted);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.err{color:var(--warn);font-size:.9rem;min-height:1.2em;margin:8px 0}
+[hidden]{display:none!important}
+.banner{background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 14px;font-size:.85rem;margin-bottom:16px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<div class="banner">Förhandsvisning med fiktiv data — så här ser Lunchlåda ut. Detta är inte den riktiga appen.</div>
+<h1 id="title">Lunchlåda Stenbockens skola</h1>
+<p class="sub">Överbliven mat från skolköket blir prisvärda lunchlådor i stället för att slängas.</p>
+<p class="note">Endast för vårdnadshavare och personal. Eleverna äter sin ordinarie skolmåltid.</p>
+<nav role="tablist">
+<button role="tab" id="t-browse" aria-selected="true">Hämta lunch</button>
+<button role="tab" id="t-kitchen" aria-selected="false">Köket</button>
+</nav>
+
+<!-- Köparvy -->
+<section id="browse">
+<div class="grid" id="cards"></div>
+</section>
+
+<!-- Köksvy (inloggad) -->
+<section id="kitchen" hidden>
+<div class="stats" id="stats"></div>
+<h2>Dagens utbud och reservationer</h2>
+<div class="tablewrap"><table id="tbl"></table></div>
+<p style="margin-top:18px"><a class="btn ghost" href="#" onclick="return false">Exportera CSV</a> <button class="btn ghost" onclick="alert('I den riktiga appen loggas du ut här.')">Logga ut</button></p>
+<p class="meta" style="margin-top:16px">Inloggad i köket med demolösenordet <code>demo-lunchlada</code>.</p>
+</section>
+</main>
+
+<!-- Reserveringsdialog -->
+<dialog id="dlg">
+<h2 id="dTitle"></h2>
+<div id="step1">
+<p class="meta" id="dInfo"></p><div id="dAl"></div>
+<div class="fg" style="margin:10px 0">
+<label><span>Förnamn</span><input id="who" autocomplete="given-name"></label>
+<label><span>E-post eller telefon</span><input id="contact" autocomplete="email"></label>
+<label><span>Antal</span><select id="q"><option>1</option><option>2</option></select></label>
+</div>
+<label class="chk"><input type="checkbox" id="ack"> <span>Jag har läst allergeninformationen och förstår att lådan ska ätas samma dag.</span></label>
+<div class="err" id="dErr"></div>
+<div class="row"><button class="btn ghost" id="cancel" type="button">Avbryt</button><button class="btn" id="pay" type="button">Reservera</button></div>
+</div>
+<div id="step2" hidden>
+<p>Reservationen är klar. Visa koden vid hämtning:</p><div class="code" id="codeBox"></div><p class="meta" id="payInfo"></p>
+<button class="btn ghost" id="done" type="button" style="width:100%">Stäng</button>
+</div>
+</dialog>
+
+<script>
+const CURRENCY = "kr";
+const AL = {gluten:"Gluten",crustaceans:"Kräftdjur",eggs:"Ägg",fish:"Fisk",peanuts:"Jordnötter",soy:"Soja",milk:"Mjölk",nuts:"Nötter",celery:"Selleri",mustard:"Senap",sesame:"Sesamfrön",sulphites:"Sulfit",lupin:"Lupin",molluscs:"Blötdjur"};
+// Fiktiv data (samma som node demo.js skapar)
+const LISTINGS = [
+  {id:1, dish:"Pasta bolognese",        qty:24, price:30, from:"13:15", to:"14:00", allergens:["gluten","milk"],      left:16},
+  {id:2, dish:"Fiskpinnar med potatis", qty:18, price:35, from:"13:30", to:"14:15", allergens:["fish","gluten","eggs"], left:12},
+  {id:3, dish:"Tomatsoppa (vegan)",     qty:30, price:25, from:"13:15", to:"13:45", allergens:[],                       left:26},
+  {id:4, dish:"Köttbullar med gräddsås",qty:20, price:40, from:"13:45", to:"14:30", allergens:["gluten","eggs","milk","celery"], left:18},
+  {id:5, dish:"Pannkakor med sylt",     qty:15, price:30, from:"14:00", to:"14:45", allergens:["gluten","eggs","milk"], left:1},
+  {id:6, dish:"Kycklingcurry med ris",  qty:10, price:35, from:"14:15", to:"15:00", allergens:[],                       left:0},
+];
+const RES = {
+  1:[{name:"Anna",contact:"anna@exempel.se",qty:2,code:"4821",status:"reserved"},{name:"Erik",contact:"erik@exempel.se",qty:2,code:"7193",status:"reserved"},{name:"Sofia",contact:"sofia@exempel.se",qty:1,code:"3058",status:"reserved"},{name:"Johan",contact:"johan@exempel.se",qty:2,code:"9240",status:"collected"},{name:"Maria",contact:"maria@exempel.se",qty:1,code:"6817",status:"collected"}],
+  2:[{name:"Per",contact:"per@exempel.se",qty:2,code:"1142",status:"reserved"},{name:"Lena",contact:"lena@exempel.se",qty:2,code:"5570",status:"reserved"},{name:"Nils",contact:"nils@exempel.se",qty:2,code:"8033",status:"collected"}],
+  3:[{name:"Karin",contact:"karin@exempel.se",qty:2,code:"2391",status:"reserved"},{name:"Bo",contact:"bo@exempel.se",qty:1,code:"4762",status:"reserved"},{name:"Eva",contact:"eva@exempel.se",qty:1,code:"6905",status:"collected"}],
+  4:[{name:"Lars",contact:"lars@exempel.se",qty:1,code:"8420",status:"reserved"},{name:"Mia",contact:"mia@exempel.se",qty:1,code:"3157",status:"reserved"}],
+  5:[{name:"Anders",contact:"anders@exempel.se",qty:2,code:"7704",status:"reserved"},{name:"Siv",contact:"siv@exempel.se",qty:2,code:"1936",status:"reserved"},{name:"Gustav",contact:"gustav@exempel.se",qty:2,code:"5268",status:"reserved"},{name:"Ingrid",contact:"ingrid@exempel.se",qty:1,code:"6041",status:"reserved"},{name:"Oskar",contact:"oskar@exempel.se",qty:2,code:"3689",status:"collected"},{name:"Astrid",contact:"astrid@exempel.se",qty:2,code:"9152",status:"collected"},{name:"Björn",contact:"bjorn@exempel.se",qty:2,code:"4073",status:"collected"},{name:"Greta",contact:"greta@exempel.se",qty:1,code:"8245",status:"collected"}],
+  6:[{name:"Alva",contact:"alva@exempel.se",qty:2,code:"2470",status:"collected"},{name:"Lina",contact:"lina@exempel.se",qty:2,code:"6518",status:"collected"},{name:"Saga",contact:"saga@exempel.se",qty:2,code:"3864",status:"collected"},{name:"Aron",contact:"aron@exempel.se",qty:2,code:"7291",status:"reserved"},{name:"Tuva",contact:"tuva@exempel.se",qty:2,code:"5806",status:"reserved"}],
+};
+const ST = {reserved:"Reserverad",collected:"Betald och utlämnad",cancelled:"Avbokad"};
+
+const $=id=>document.getElementById(id);
+const el=(tag,props={},...kids)=>{const e=document.createElement(tag);Object.assign(e,props);kids.flat().forEach(k=>e.append(k));return e};
+const money=n=>n+" "+CURRENCY;
+let cur=null;
+
+function renderCards(){
+  $("cards").replaceChildren(...LISTINGS.map(l=>{
+    const sold=l.left<1;
+    return el("div",{className:"card"},
+      el("h3",{textContent:l.dish}),
+      el("p",{className:"meta",textContent:`Hämtas ${l.from}–${l.to}`}),
+      el("div",{},...(l.allergens.length?l.allergens.map(a=>el("span",{className:"tag al",textContent:AL[a]})):[el("span",{className:"tag",textContent:"Inga av de 14 allergenerna angivna"})])),
+      el("div",{className:"row"},
+        el("span",{className:"price",textContent:money(l.price)}),
+        el("span",{className:l.left<=3?"low":"",textContent:l.left>0?`${l.left} kvar`:"Slutsåld"})),
+      el("button",{className:"btn",style:"width:100%;margin-top:12px",disabled:sold,textContent:sold?"Slutsåld":"Reservera",onclick:()=>openDlg(l)}));
+  }));
+}
+
+function openDlg(l){
+  cur=l;$("dTitle").textContent=l.dish;
+  $("dInfo").textContent=`${money(l.price)} · Hämtas ${l.from}–${l.to}`;
+  $("dAl").replaceChildren(...(l.allergens.length?["Innehåller: ",...l.allergens.map(a=>el("span",{className:"tag al",textContent:AL[a]}))]:[]));
+  $("dErr").textContent="";$("ack").checked=false;$("step1").hidden=false;$("step2").hidden=true;$("dlg").showModal();
+}
+$("cancel").onclick=$("done").onclick=()=>$("dlg").close();
+$("pay").onclick=()=>{
+  if(!$("who").value||!$("contact").value){$("dErr").textContent="Kontrollera uppgifterna.";return}
+  if(!$("ack").checked){$("dErr").textContent="Bekräfta allergeninformationen.";return}
+  const q=+$("q").value, code=String(1000+Math.floor(Math.random()*9000));
+  $("codeBox").textContent=code;
+  $("payInfo").textContent=`Betala ${money(cur.price*q)} i skolköket när du hämtar lådan.`;
+  $("step1").hidden=true;$("step2").hidden=false;
+};
+
+function renderKitchen(){
+  // Statistik: räkna utlämnade portioner, kg (0,4/portion) och intäkt
+  let collected=0,rev=0;
+  Object.entries(RES).forEach(([id,rs])=>rs.forEach(r=>{if(r.status==="collected"){collected+=r.qty;rev+=r.qty*LISTINGS.find(l=>l.id==id).price;}}));
+  const kg=(collected*0.4).toFixed(1);
+  $("stats").replaceChildren(...[[collected,"portioner utlämnade totalt"],[kg+" kg","matsvinn undvikit"],[money(rev),"intäkt från utlämnade lådor"]].map(([b,s])=>el("div",{className:"stat"},el("b",{textContent:b}),el("span",{textContent:s}))));
+  const rows=[el("tr",{},...["Maträtt","Kvar","Namn","Antal","Kod","Status",""].map(c=>el("th",{textContent:c})))];
+  LISTINGS.forEach(l=>{
+    rows.push(el("tr",{},
+      el("td",{},el("b",{textContent:l.dish})),
+      el("td",{textContent:`${l.left}/${l.qty}`}),
+      el("td",{colSpan:4}),
+      el("td",{},el("button",{className:"btn ghost",textContent:"Ta bort",onclick:()=>alert("I den riktiga appen tas utbudet bort här.")}))));
+    (RES[l.id]||[]).forEach(r=>rows.push(el("tr",{},
+      el("td"),el("td"),
+      el("td",{textContent:`${r.name} (${r.contact})`}),
+      el("td",{textContent:r.qty}),
+      el("td",{textContent:r.code}),
+      el("td",{textContent:ST[r.status]}),
+      el("td",{},
+        el("button",{className:"btn ghost",textContent:"Betald och utlämnad",onclick:()=>alert("I den riktiga appen markeras lådan som utlämnad här.")})," ",
+        el("button",{className:"btn ghost",textContent:"Avboka",onclick:()=>alert("I den riktiga appen avbokas reservationen här.")})))));
+  });
+  $("tbl").replaceChildren(...rows);
+}
+
+function tab(k){["browse","kitchen"].forEach(x=>{$(x).hidden=x!==k;$("t-"+x).setAttribute("aria-selected",x===k)})}
+$("t-browse").onclick=()=>tab("browse");
+$("t-kitchen").onclick=()=>tab("kitchen");
+
+renderCards();
+renderKitchen();
+</script>
+</body>
+</html>

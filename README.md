@@ -17,7 +17,10 @@ Fungerar på svenska och engelska. Gratis och öppen källkod (MIT-licens).
 
 ## Prova demon (fiktiv data)
 
-Vill du bara titta runt innan ni sätter upp riktigt? Kör de här två raderna i projektmappen:
+Vill du bara titta på hur det ser ut? Öppna `preview.html` i webbläsaren — en statisk
+sida med fiktiv data som visar både köpar- och köksvyn. Ingen server eller Node krävs.
+
+Vill du i stället klicka dig runt i det riktiga programmet? Kör de här två raderna i projektmappen:
 
 ```
 node demo.js
